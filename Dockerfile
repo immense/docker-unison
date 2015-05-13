@@ -1,11 +1,13 @@
 FROM phusion/baseimage:0.9.16
 CMD ["/sbin/my_init"]
 
-MAINTAINER Leigh McCulloch
+MAINTAINER Christian Bankester
+
+# Set default Unison version
+ENV UNISON_VERSION=2.48.3
 
 # Upload Unison for building
-COPY unison-2.40.102.tar.gz /tmp/unison/
-COPY unison-2.48.3.tar.gz /tmp/unison/
+COPY unison-$UNISON_VERSION.tar.gz /tmp/unison/
 
 # Build and install Unison versions then cleanup
 COPY unison-install.sh .
@@ -17,13 +19,10 @@ RUN apt-get update -y \
  && apt-get autoremove -y \
  && rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
 
-# Set default Unison version
-ENV UNISON_VERSION=2.48.3
-
 # Set working directory to be the home directory
 WORKDIR /root
 
 # Setup unison to run as a service
-VOLUME /unison
+VOLUME /code:/code
 COPY unison-run.sh /etc/service/unison/run
 EXPOSE 5000
