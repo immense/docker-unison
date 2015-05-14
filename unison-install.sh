@@ -8,5 +8,5 @@ do
   UNISON_RELEASE=${UNISON_TAR_GZ%.tar.gz}
   cd $UNISON_RELEASE
   make UISTYLE=text
-  cp unison /bin/$UNISON_RELEASE
+  cp unison /bin/unison
 done
