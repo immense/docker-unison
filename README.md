@@ -1,69 +1,67 @@
 # Docker-Unison
-A docker volume container using [Unison](http://www.cis.upenn.edu/~bcpierce/unison/) for fast two-way folder sync. Created as an alternative to [slow boot2docker volumes on OS X](https://github.com/boot2docker/boot2docker/issues/593).
 
-## Usage
+An extension of https://github.com/leighmcculloch/docker-unison to support mounting into a docker host.
+
+## Usage:
+
+### Install Unison Locally
+
+Unison requires the version of the client (running on the host) and server (running in the container, currently at `2.48.3`) to match.
+
+* On Mac OSX: `brew install unison`
+* Otherwise: [download and compile](https://www.cis.upenn.edu/~bcpierce/unison/)
+
+### Install fswatch Locally
+
+* On Mac OSX: `brew install fswatch`
+* Otherwise: [download and compile](http://emcrisostomo.github.io/fswatch/)
+
+### Install `coreos-sync` Utility
+
+```bash
+curl -L https://gist.githubusercontent.com/cbankester/0ca3d103a1f5e49b8d37/raw/d9f9e0b3d5bd2e6577894dc2856818f6ca84e6cc/coreos-sync.sh > /usr/local/bin/coreos-sync
+chmod +x /usr/local/bin/coreos-sync
+```
 
 ### Docker
 
 First, you can launch a volume container exposing a volume with Unison.
 
 ```bash
-$ CID=$(docker run -d -p 5000:5000 -e UNISON_VERSION=2.48.3 leighmcculloch/unison)
+docker run -d -p 5000:5000 immense/unison
 ```
 
-You can then sync a local folder to `/unison` in the container with:
+You can then sync a local folder to `/code` in the container with with the `coreos-sync` utility:
 
 ```bash
-$ unison . socket://<docker>:5000/ -auto -batch
+coreos-sync ./some-dir some-dir
+# this will create the folder /code/some-dir on the docker host
 ```
 
-Next, you can launch a container connected with the volume under `/unison`.
+Now you can launch another container with /code/some-dir mounted as a volume:
 
 ```bash
-$ docker run -it --volumes-from $CID ubuntu /bin/sh
+$ docker run -it -v /code/some-dir:/whatever/you/want /bin/sh
 ```
 
 ### Docker Compose
 
-If you are using Docker Compose to manage a dev environment, use the `volumes_from` directive.
-
-The following `docker-compose.yml` would mount the `/unison` folder from the `unison` container inside your `mywebserver` container.
+If you are using the `immense/node-baseimage` container, you can use the `volumes` directive in development:
 
 ```yaml
-mywebserver:  
-  build: .  
-  volumes_from:  
-    - unison  
-unison:  
-  image: leighmcculloch/unison  
-  environment:  
-    - UNISON_VERSION=2.48.3  
-  ports:  
-    - "5000:5000"
+web:
+  ...
+  volumes:
+    - /code/some-dir:/webapp/some-dir
 ```
 
-You can then sync a local folder, using the unison client, to `/unison` in the container with:
+You can then keep the local dir `some-dir` in sync with the unison container (and by extension, the docker host) with:
 
 ```bash
-$ unison . socket://<docker>:5000/ -ignore 'Path .git' -auto -batch
+coreos-sync ./some-dir some-dir -w
 ```
 
-You could combine it with fswatch to sync automatically when files change:
-
-```bash
-$ fswatch -o . | xargs -n1 -I{} unison . socket://<docker>:5000/ -ignore 'Path .git' -auto -batch
-```
-
-## Installing Unison Locally
-Unison requires the version of the client (running on the host) and server (running in the container) to match. This docker image includes common versions of Unison server which can be selected with the `UNISON_VERSION` environment variable.
-
-* 2.40.102 (available via `apt-get install unison` on Ubuntu 14.04, 14.10, 15.04)
-* 2.48.3 (available via `brew install unison` on Mac OS X) [default]
-
-Additional versions can be added easily on request. Open an Issue if you need another version.
-
-## Installing fswatch Locally
-Get fswatch using `brew install fswatch` on Mac OS X otherwise [download and compile from a release build](http://emcrisostomo.github.io/fswatch/).
+Your web application container will now receive all file changes from your local copy of the application source code.
 
 ## License
 This docker image is licensed under GPLv3 because Unison is licensed under GPLv3 and is included in the image. See LICENSE.

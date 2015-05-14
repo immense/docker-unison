@@ -23,6 +23,6 @@ RUN apt-get update -y \
 WORKDIR /root
 
 # Setup unison to run as a service
-VOLUME /code:/code
+VOLUME /code
 COPY unison-run.sh /etc/service/unison/run
 EXPOSE 5000
