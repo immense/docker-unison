@@ -19,7 +19,7 @@ Unison requires the version of the client (running on the host) and server (runn
 ### Install `coreos-sync` Utility
 
 ```bash
-curl -L https://gist.githubusercontent.com/cbankester/0ca3d103a1f5e49b8d37/raw/d9f9e0b3d5bd2e6577894dc2856818f6ca84e6cc/coreos-sync.sh > /usr/local/bin/coreos-sync
+curl -L https://gist.githubusercontent.com/cbankester/0ca3d103a1f5e49b8d37/raw/a2af97b0269c0d3110f78e39a1b6e7446ccbffae/coreos-sync.sh > /usr/local/bin/coreos-sync
 chmod +x /usr/local/bin/coreos-sync
 ```
 
